@@ -1,0 +1,30 @@
+app:
+  name: fcadmin
+  host: localhost
+  port: 9956
+  logLevel: info
+  logDir: ./fcadmin_logs
+database:
+  name: familycloud
+  host: localhost
+  port: 5432
+  username: allawiii
+  password: "0788"
+email:
+  protocol: "smtp"
+  port: 1025
+  tlsParam: false
+  host: localhost
+  username: anything
+  password: anything
+  fromSender: noreply@yourapp.com
+rustfs:
+  region: us-east-1
+  accessKey: family
+  url: http://127.0.0.1:9000
+secrets:
+  rustfs: OIodbFUiNK34xthjR0newczMC6HaAyksJS1GXfYZ
+  hmac: OIodbFUiNK34xthjR0newczMC6HaAyksJS1GXfYZ
+redis:
+  host: 127.0.0.1
+  port: 6379
