@@ -15,9 +15,9 @@ userRouter.use(auth);
 // define routes relative to /api/user
 userRouter.get("/list", listUsers);
 userRouter.post("/add", addUser);
-userRouter.patch("/update", updateUser);
-userRouter.delete("/remove", removeUser);
-userRouter.post("/logout/:id", logoutUser);
+userRouter.patch("/update/:id", updateUser);
+userRouter.delete("/remove/:id", removeUser);
+userRouter.post("/logout/", logoutUser);
 
 // mount router
 app.use("/api/user", userRouter);
