@@ -15,7 +15,7 @@ export const dbCon = new DataSource({
   database: db.name,
   synchronize: false,
   migrationsRun: false,
-  entities: [User, File, Folder],
+  entities: [User, File, Folder, Admin],
 });
 
 // At startup — same panic behavior as yours
