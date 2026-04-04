@@ -18,7 +18,7 @@ export class User {
   email: string;
 
   @Column({ name: "password_hash", length: 255, select: false })
-  passwordHash: string; // camelCase, maps to snake_case column
+  passwordHash?: string;
 
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;
