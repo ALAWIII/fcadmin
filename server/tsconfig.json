@@ -1,6 +1,7 @@
 {
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
+    "plugins": [{ "transform": "typia/lib/transform" }],
     // File Layout
     // "rootDir": "./src",
     // "outDir": "./dist",
@@ -19,7 +20,8 @@
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
-
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
