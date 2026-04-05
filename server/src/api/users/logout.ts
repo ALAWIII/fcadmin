@@ -5,7 +5,7 @@ export async function logoutUser(req: Request, res: Response) {
   try {
     const keys = await rdsCon.keys("refresh:*");
     if (keys.length > 0) await rdsCon.del(...keys);
-    res.status(204);
+    res.json(keys.length);
   } catch (err) {
     res.status(500).json({ error: `failed to force logout users: ${err}` });
   }
