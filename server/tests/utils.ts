@@ -2,6 +2,7 @@ import { AdminRepo, app } from "../src/lib.js";
 import { default as supertest } from "supertest";
 import { v4 as uuidv4 } from "uuid";
 import { default as argon2 } from "argon2";
+import type { User } from "../src/models.js";
 
 export const server = supertest(app);
 
@@ -36,4 +37,18 @@ export async function insertValidAdmin() {
   let resp = await server.post("/api/admin/login").send(body).expect(200);
   newAdmin.jwt = resp.body.token;
   return newAdmin;
+}
+export interface NewUser {
+  email: string;
+  username: string;
+  password: string;
+}
+export async function addUser(user: NewUser) {
+  let newAdmin = await insertValidAdmin();
+  let resp = await server
+    .post("/api/user/add")
+    .send(user)
+    .auth(newAdmin.jwt!, { type: "bearer" })
+    .expect(201);
+  return resp.body as User;
 }
