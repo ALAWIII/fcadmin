@@ -9,6 +9,7 @@ export class AdminAccount {
   username: string;
   passwordHash: string;
   pswd: string;
+  jwt?: string;
 
   constructor(name: string, pswd: string, pswdhash: string) {
     this.passwordHash = pswdhash;
@@ -17,7 +18,7 @@ export class AdminAccount {
   }
 }
 
-export async function insertAdmin(): Promise<AdminAccount> {
+async function insertAdmin(): Promise<AdminAccount> {
   let username = uuidv4();
   let pswdhash = await argon2.hash(username);
   let adac = new AdminAccount(username, username, pswdhash);
@@ -27,4 +28,12 @@ export async function insertAdmin(): Promise<AdminAccount> {
   });
   await AdminRepo.insert(ad);
   return adac;
+}
+
+export async function insertValidAdmin() {
+  let newAdmin = await insertAdmin();
+  let body = { username: newAdmin.username, password: newAdmin.pswd };
+  let resp = await server.post("/api/admin/login").send(body).expect(200);
+  newAdmin.jwt = resp.body.token;
+  return newAdmin;
 }

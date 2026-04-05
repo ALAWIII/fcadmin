@@ -1,12 +1,9 @@
-import { insertAdmin, server } from "./utils.js";
+import { insertValidAdmin, server } from "./utils.js";
 import { test, expect } from "vitest";
 
 async function login(): Promise<string> {
-  let newAdmin = await insertAdmin();
-  let body = { username: newAdmin.username, password: newAdmin.pswd };
-  let resp = await server.post("/api/admin/login").send(body).expect(200);
-
-  return resp.body.token as string;
+  let newAdmin = await insertValidAdmin();
+  return newAdmin.jwt!;
 }
 
 async function loginInvalidAdmin(): Promise<string> {
