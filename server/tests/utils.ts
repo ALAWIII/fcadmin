@@ -1,4 +1,4 @@
-import { AdminRepo, app } from "../src/lib.js";
+import { AdminRepo, app, rdsCon } from "../src/lib.js";
 import { default as supertest } from "supertest";
 import { v4 as uuidv4 } from "uuid";
 import { default as argon2 } from "argon2";
@@ -50,5 +50,6 @@ export async function addUser(user: NewUser) {
     .send(user)
     .auth(newAdmin.jwt!, { type: "bearer" })
     .expect(201);
+  rdsCon.setex(`refresh:${user.username}`, 60 * 60, "");
   return resp.body as User;
 }
