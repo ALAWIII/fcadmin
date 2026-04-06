@@ -2,7 +2,7 @@ import { S3Client } from "@aws-sdk/client-s3";
 import settings from "./config.js";
 
 let rfs = settings.rustfs;
-const s3 = new S3Client({
+const rfsCon = new S3Client({
   region: rfs.region,
   endpoint: rfs.url,
   credentials: {
@@ -12,4 +12,4 @@ const s3 = new S3Client({
   forcePathStyle: true,
 });
 
-export default s3;
+export default rfsCon;
