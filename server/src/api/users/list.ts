@@ -15,8 +15,7 @@ export async function listUsers(req: Request, res: Response): Promise<void> {
         // passwordHash simply not listed = excluded ✅
       },
     });
-    res.json(users); // json() over send() for objects
-    return;
+    res.json(users);
   } catch (err) {
     res.status(500).json({ error: `failed to list users: ${err}` });
   }
