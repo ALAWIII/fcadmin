@@ -1,4 +1,4 @@
-import { AdminRepo, app, fileRepo, rdsCon } from "../src/lib.js";
+import { AdminRepo, app, fileRepo, folderRepo, rdsCon } from "../src/lib.js";
 import { default as supertest } from "supertest";
 import { v4 as uuidv4 } from "uuid";
 import { default as argon2 } from "argon2";
@@ -81,6 +81,20 @@ export async function injectFile(
   });
   let resp = await uploadRfsFile(rfsCon, ownerId, id);
   expect(resp.Size).toBeDefined;
+  return f;
+}
+export async function injectFolder(
+  id: string,
+  ownerId: string,
+  parentId: string,
+) {
+  let f = await folderRepo.save({
+    id,
+    ownerId,
+    parentId,
+    name: id,
+  });
+
   return f;
 }
 export async function rfsObjectExists(
