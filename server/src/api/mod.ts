@@ -1,5 +1,6 @@
 import app from "../app.js";
 import { auth } from "../middleware.js";
+import { listChildren } from "./objects/metadata.js";
 import { addUser } from "./users/add.js";
 import { listUsers } from "./users/list.js";
 import { logoutUser } from "./users/logout.js";
@@ -18,6 +19,12 @@ userRouter.post("/add", addUser);
 userRouter.patch("/update/:id", updateUser);
 userRouter.delete("/remove/:id", removeUser);
 userRouter.post("/logout/", logoutUser);
-
 // mount router
 app.use("/api/user", userRouter);
+
+const objectRouter = express.Router();
+objectRouter.use(auth);
+
+objectRouter.get("/children/:id", listChildren);
+
+app.use("/api/object", objectRouter);
