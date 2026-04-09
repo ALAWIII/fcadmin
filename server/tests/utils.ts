@@ -74,7 +74,7 @@ export async function injectFile(
     id,
     ownerId,
     parentId,
-    name: "shawarma",
+    name: `shawarma_${id}`,
     size: 2,
     etag: "notImportant",
     mimeType: "notImportant",
