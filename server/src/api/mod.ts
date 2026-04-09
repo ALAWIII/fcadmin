@@ -32,5 +32,5 @@ const objectRouter = express.Router();
 objectRouter.use(auth);
 
 objectRouter.get("/children/:id", listChildren);
-objectRouter.get("/remove/:id", remove);
+objectRouter.delete("/remove/:id", remove);
 app.use("/api/object", objectRouter);
