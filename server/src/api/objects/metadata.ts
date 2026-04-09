@@ -10,9 +10,10 @@ export async function listChildren(req: Request, res: Response) {
     return res.status(400).json({ error: "Invalid folder id." });
   }
   try {
+    const q = { where: { parentId: folderId }, withDeleted: true };
     const [files, folders] = await Promise.all([
-      fileRepo.findBy({ parentId: folderId }),
-      folderRepo.findBy({ parentId: folderId }),
+      fileRepo.find(q),
+      folderRepo.find(q),
     ]);
 
     res.json({ files, folders });
