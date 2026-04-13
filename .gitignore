@@ -2,3 +2,4 @@ node_modules
 server/target
 ui/target
 server/logs
+ui/react-router-0.cpuprofile
