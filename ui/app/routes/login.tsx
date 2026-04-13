@@ -28,8 +28,8 @@ function LoginForm() {
   const [show, setShow] = useState(false);
   return (
     <GlassCard
-      className="flex flex-col items-center" // remove justify-center & pb-40
-      size="max-w-[50%] min-w-[30%] h-1/2"
+      className="flex flex-col items-center " // remove justify-center & pb-40
+      size="w-[90%] max-w-[600px] min-w-[280px] min-h-[50%]"
     >
       {/* Pinned to top */}
       <LoginTitle />
@@ -99,7 +99,7 @@ function InputCard({ txt = "", type = "text" }) {
   return (
     <GlassCard
       className="m-2.5 p-4 hover:bg-amber-50/30"
-      size="w-[40%] min-h-[0px]"
+      size="w-[70%] min-h-[0px]"
       shadow="shadow-[0px_10px_10px_rgba(0,0,0,0.5)]"
     >
       <input
