@@ -3,3 +3,10 @@ server/target
 ui/target
 server/logs
 ui/react-router-0.cpuprofile
+ui/DS_Store
+ui/env
+ui/node_modules/
+
+# React Router
+ui/.react-router/
+ui/build/
