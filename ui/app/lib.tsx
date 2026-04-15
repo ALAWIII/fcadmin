@@ -20,7 +20,7 @@ interface GlassCardProps {
 export function GlassCard({
   children,
   className = "",
-  rounded = "rounded-[50px]",
+  rounded = "rounded-[20px]",
   shadow = "shadow-[0px_10px_50px_rgba(0,0,0,0.5)]",
   blur = "backdrop-blur-xs",
   border = "border border-white/20",
