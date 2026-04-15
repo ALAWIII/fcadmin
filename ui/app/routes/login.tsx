@@ -14,13 +14,13 @@ export default function LoginPage() {
 function LoginTitle() {
   return (
     <p
-      className="text-3xl text-black/40  font-lobster font-bold"
+      className="text-3xl text-black/80 font-leckerli font-bold"
       style={{
-        WebkitTextStroke: "1px rgba(255,255,255,0.9)",
+        WebkitTextStroke: "2px rgba(255,255,255,0.9)",
         textShadow: "0px 0px 15px rgba(255,255,255,0.5)",
       }}
     >
-      fc admin
+      FC admin
     </p>
   );
 }
