@@ -16,33 +16,81 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from "~/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type User = {
+  id: number;
+  username: string;
+  email: string;
+  created_at: string;
+  used_space: string;
+  max_space: string;
+};
+
+type FormFields = Pick<User, "username" | "email" | "used_space" | "max_space">;
+
+// Strict union so dialog state can only be one of these values
+type DialogMode = DMode | null;
+enum DMode {
+  delete,
+  details,
+  update,
+}
+// ─── Mock data (replace with API fetch later) ─────────────────────────────────
+
+const USERS: User[] = Array.from({ length: 9 }).map((_, i) => ({
+  id: i + 1,
+  username: `user${i + 1}`,
+  email: `user${i + 1}@example.com`,
+  used_space: "2.3 GB",
+  max_space: "10 GB",
+  created_at: "2024-01-15",
+}));
+
+// ─── Home ─────────────────────────────────────────────────────────────────────
+
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
     <div
       style={{ backgroundImage: "url('/clouds_sunset.jpg')" }}
-      className="grid grid-cols-5 grid-rows-[auto_1fr] h-dvh bg-size-[100%_100%]  bg-no-repeat p-4 gap-4"
+      className="grid h-dvh grid-cols-5 grid-rows-[auto_1fr] gap-4 bg-position-[100%_100%] bg-no-repeat p-4"
     >
       <TopBar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-      {sidebarOpen ? <SideBar /> : null}
+      {sidebarOpen && <SideBar />}
       <DashBoard cspan={sidebarOpen ? "col-span-4" : "col-span-full"} />
     </div>
   );
 }
+
+// ─── TopBar ───────────────────────────────────────────────────────────────────
+
 interface ShowSidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (value: boolean) => void;
 }
+
 function TopBar({ sidebarOpen, setSidebarOpen }: ShowSidebarProps) {
   return (
     <GlassCard
-      className="flex flex-row justify-between col-span-full items-center "
+      className="col-span-full flex flex-row items-center justify-between"
       padding="p-4"
     >
       <SideBarButton
@@ -57,12 +105,13 @@ function TopBar({ sidebarOpen, setSidebarOpen }: ShowSidebarProps) {
     </GlassCard>
   );
 }
+
 function TitleBar() {
   return (
     <p
-      className=" text-2xl text-black  font-inter  font-bold
-      hover:bg-white/10 hover:pl-2 hover:pr-2
-      hover:shadow-[0px_0px_20px_rgba(255,255,255,0.5)] hover:rounded-2xl"
+      className="font-inter text-2xl font-bold text-black
+      hover:rounded-2xl hover:bg-white/10 hover:px-2
+      hover:shadow-[0px_0px_20px_rgba(255,255,255,0.5)]"
       style={{
         WebkitTextStroke: "2px rgba(255,255,255,0.9)",
         textShadow: "0px 0px 15px rgba(255,255,255,0.5)",
@@ -72,59 +121,52 @@ function TitleBar() {
     </p>
   );
 }
+
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
+
 function SideBar() {
   return (
-    <GlassCard className="flex flex-col col-span-1 overflow-auto gap-2 ">
+    <GlassCard className="col-span-1 flex flex-col gap-2 overflow-auto">
       <Storage text="max : 50GB" />
       <Storage text="available: 20GB" />
-      <LogoutButton></LogoutButton>
+      <LogoutButton />
     </GlassCard>
   );
 }
+
 function LogoutButton() {
   return (
     <GlassCard
-      className=" hover:bg-white/10 p-0 mt-auto"
-      gradient="bg-linear-to-b from-red-600/70 via-blue-600/20 to-white/50 hover:from-red-600/80 hover:to-white/70
-        transition-all duration-200"
+      className="mt-auto p-0 hover:bg-white/10"
+      gradient="bg-linear-to-b from-red-600/70 via-blue-600/20 to-white/50
+        hover:from-red-600/80 hover:to-white/70 transition-all duration-200"
     >
       <button
-        className="text-center w-full h-full p-5
-        active:bg-linear-to-b active:from-red-600/60 active:to-white/30 active:via-blue-600/20
-        active:shadow-[0px_0px_10px_rgba(255,0,0,0.5)]
-        active:rounded-2xl
-        font-inter font-bold text-blue-800
-        "
+        className="h-full w-full p-5 text-center font-inter font-bold text-blue-800
+        active:rounded-2xl active:bg-linear-to-b active:from-red-600/60
+        active:via-blue-600/20 active:to-white/30
+        active:shadow-[0px_0px_10px_rgba(255,0,0,0.5)]"
       >
         Logout all users
       </button>
     </GlassCard>
   );
 }
-function Storage({ text = "" }) {
+
+function Storage({ text = "" }: { text?: string }) {
   return (
-    <GlassCard className="text-nowrap overflow-x-scroll text-black font-bold italic text-shadow-2xs text-shadow-amber-50 text-center">
+    <GlassCard className="overflow-x-auto text-nowrap text-center font-bold italic text-black text-shadow-2xs text-shadow-amber-50">
       <span>{text}</span>
     </GlassCard>
   );
 }
-type FormFields = {
-  username: string;
-  email: string;
-  used_space: string;
-  max_space: string;
-};
-const user = {
-  id: 1,
-  username: "ali123",
-  email: "ali@example.com",
-  created_at: "2024-01-15",
-  used_space: "2.3 GB",
-  max_space: "10 GB",
-};
 
-export function UserActionsDropdown() {
-  const [dialog, setDialog] = useState<null | string>(null); // "delete" | "details" | "update"
+// ─── UserActionsDropdown ──────────────────────────────────────────────────────
+
+export function UserActionsDropdown({ user }: { user: User }) {
+  const [dialog, setDialog] = useState<DialogMode>(null);
+  const [loading, setLoading] = useState(false);
+
   const [form, setForm] = useState<FormFields>({
     username: user.username,
     email: user.email,
@@ -134,22 +176,55 @@ export function UserActionsDropdown() {
 
   const closeDialog = () => setDialog(null);
 
+  // Call update API with the current form values
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      await fetch(`/api/users/${user.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      closeDialog();
+    } catch (err) {
+      console.error("Update failed:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Call delete API then remove user from UI
+  const handleDelete = async () => {
+    setLoading(true);
+    try {
+      await fetch(`/api/users/${user.id}`, { method: "DELETE" });
+      closeDialog();
+    } catch (err) {
+      console.error("Delete failed:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
+      {/* ── Trigger dropdown ── */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline">Actions</Button>
+          <Button size="sm" variant="outline">
+            Actions
+          </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem onSelect={() => setDialog("details")}>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={() => setDialog(DMode.details)}>
             Details
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => setDialog("update")}>
+          <DropdownMenuItem onSelect={() => setDialog(DMode.update)}>
             Update
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onSelect={() => setDialog("delete")}
+            onSelect={() => setDialog(DMode.delete)}
             className="text-red-500"
           >
             Delete
@@ -157,35 +232,34 @@ export function UserActionsDropdown() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* DELETE DIALOG */}
-      <Dialog open={dialog === "delete"} onOpenChange={closeDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete User</DialogTitle>
-            <DialogDescription className="text-red-500">
+      {/* ── Delete: AlertDialog (shadcn's recommended component for destructive actions) ── */}
+      <AlertDialog
+        open={dialog === DMode.delete}
+        onOpenChange={(open) => !open && closeDialog()}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete "{user.username}"?</AlertDialogTitle>
+            <AlertDialogDescription className="text-red-500">
               ⚠️ This will permanently delete the user and all associated
               files/folders. This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={closeDialog}>
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => {
-                console.log("Deleting user...");
-                closeDialog();
-              }}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              disabled={loading}
+              onClick={handleDelete}
             >
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              {loading ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      {/* DETAILS DIALOG */}
-      <Dialog open={dialog === "details"} onOpenChange={closeDialog}>
+      {/* ── Details: read-only info grid ── */}
+      <Dialog open={dialog === DMode.details} onOpenChange={closeDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>User Details</DialogTitle>
@@ -212,39 +286,38 @@ export function UserActionsDropdown() {
         </DialogContent>
       </Dialog>
 
-      {/* UPDATE DIALOG */}
-      <Dialog open={dialog === "update"} onOpenChange={closeDialog}>
+      {/* ── Update: editable form ── */}
+      <Dialog open={dialog === DMode.update} onOpenChange={closeDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Update User</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4">
-            {[
-              { label: "Username", key: "username" as keyof FormFields },
-              { label: "Email", key: "email" as keyof FormFields },
-              { label: "Used Space", key: "used_space" as keyof FormFields },
-              { label: "Max Space", key: "max_space" as keyof FormFields },
-            ].map(({ label, key }) => (
+            {(
+              [
+                { label: "Username", key: "username" },
+                { label: "Email", key: "email" },
+                { label: "Used Space", key: "used_space" },
+                { label: "Max Space", key: "max_space" },
+              ] as const
+            ).map(({ label, key }) => (
               <div key={key} className="grid gap-1">
                 <Label>{label}</Label>
                 <Input
                   value={form[key]}
-                  onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, [key]: e.target.value }))
+                  }
                 />
               </div>
             ))}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={closeDialog}>
+            <Button variant="outline" disabled={loading} onClick={closeDialog}>
               Cancel
             </Button>
-            <Button
-              onClick={() => {
-                console.log("Saving:", form);
-                closeDialog();
-              }}
-            >
-              Save
+            <Button disabled={loading} onClick={handleSave}>
+              {loading ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -253,34 +326,36 @@ export function UserActionsDropdown() {
   );
 }
 
-function UserOptionButton() {
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+
+function UserOptionButton({ user }: { user: User }) {
   return (
-    <div className="h-8 justify-self-end-safe">
-      <UserActionsDropdown />
+    <div className="h-8 justify-self-end">
+      <UserActionsDropdown user={user} />
     </div>
   );
 }
-function DashBoard({ cspan = "col-span-4" }) {
-  const records = [];
-  for (let i = 0; i < 9; i++) {
-    records.push(
-      <Row className="">
-        {["ali", "ali@shawarma.com", "5GB", "3GB"].map((v) => (
-          <UserValue key={i} value={v} />
-        ))}
-        <UserOptionButton />
-      </Row>,
-    );
-  }
 
+function DashBoard({ cspan = "col-span-4" }: { cspan?: string }) {
   return (
-    <GlassCard className={cn("flex flex-col overflow-scroll gap-2  ", cspan)}>
-      <Row className="border-none backdrop-blur-none shadow-none ">
+    <GlassCard className={cn("flex flex-col gap-2 overflow-auto", cspan)}>
+      {/* Header row */}
+      <Row className="border-none shadow-none backdrop-blur-none font-semibold">
         {["username", "email", "max space", "used space", ""].map((v) => (
-          <UserValue value={v} />
+          <UserValue key={v} value={v} />
         ))}
       </Row>
-      {records}
+
+      {/* One row per user */}
+      {USERS.map((user) => (
+        <Row key={user.id} className="">
+          <UserValue value={user.username} />
+          <UserValue value={user.email} />
+          <UserValue value={user.max_space} />
+          <UserValue value={user.used_space} />
+          <UserOptionButton user={user} />
+        </Row>
+      ))}
     </GlassCard>
   );
 }
@@ -290,32 +365,36 @@ function Row({
   className = "",
 }: {
   children: React.ReactNode;
-  className: string;
+  className?: string;
 }) {
   return (
     <GlassCard
       className={cn(
+        "flex h-fit flex-row items-center justify-between p-2 text-center font-inter text-xl text-blue-950/60",
         className,
-        "flex flex-row justify-between font-inter text-xl text-center text-blue-950/60 items-center p-2 h-fit ",
       )}
     >
       {children}
     </GlassCard>
   );
 }
-function UserValue({ value = "" }) {
-  return <span className="overflow-scroll h-full text-center ">{value}</span>;
+
+function UserValue({ value = "" }: { value?: string }) {
+  return <span className="max-w-55 overflow-x-auto text-center">{value}</span>;
 }
+
+// ─── Small buttons ────────────────────────────────────────────────────────────
+
 function SideBarButton({ sidebarOpen, setSidebarOpen }: ShowSidebarProps) {
   return (
     <button
-      className="hover:bg-white/30 hover:shadow-[0px_10px_20px_rgba(255,255,255,0.5)] rounded-2xl p-3 w-14 h-14"
+      className="h-14 w-14 rounded-2xl p-3 hover:bg-white/30 hover:shadow-[0px_10px_20px_rgba(255,255,255,0.5)]"
       onClick={() => setSidebarOpen(!sidebarOpen)}
     >
       {sidebarOpen ? (
-        <GoSidebarCollapse className="w-full h-full text-red-600 " />
+        <GoSidebarCollapse className="h-full w-full text-red-600" />
       ) : (
-        <GoSidebarExpand className="w-full h-full  text-blue-700" />
+        <GoSidebarExpand className="h-full w-full text-blue-700" />
       )}
     </button>
   );
@@ -323,16 +402,16 @@ function SideBarButton({ sidebarOpen, setSidebarOpen }: ShowSidebarProps) {
 
 function RefreshButton() {
   return (
-    <button className="p-4 w-14 h-14">
-      <GrRefresh className="active:bg-amber-50/30 active:text-red-500 active:rounded-full active:shadow-[0px_0px_20px_rgba(255,0,0,0.4)] w-full h-full" />
+    <button className="h-14 w-14 p-4">
+      <GrRefresh className="h-full w-full rounded-full active:bg-amber-50/30 active:text-red-500 active:shadow-[0px_0px_20px_rgba(255,0,0,0.4)]" />
     </button>
   );
 }
 
 function AddUserButton() {
   return (
-    <button className="p-4 w-14 h-14">
-      <MdOutlinePersonAddAlt className="active:bg-amber-50/30 active:text-green-500 active:rounded-es-sm active:shadow-[0px_0px_20px_rgba(0,255,255,0.5)] w-full h-full" />
+    <button className="h-14 w-14 p-4">
+      <MdOutlinePersonAddAlt className="h-full w-full rounded-es-sm active:bg-amber-50/30 active:text-green-500 active:shadow-[0px_0px_20px_rgba(0,255,255,0.5)]" />
     </button>
   );
 }
