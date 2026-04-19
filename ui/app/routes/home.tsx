@@ -3,6 +3,7 @@ import { GoSidebarExpand, GoSidebarCollapse } from "react-icons/go";
 import { MdOutlinePersonAddAlt } from "react-icons/md";
 import { useState } from "react";
 import { GrRefresh } from "react-icons/gr";
+import { BsThreeDotsVertical } from "react-icons/bs";
 
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -42,7 +43,7 @@ function TopBar({ sidebarOpen, setSidebarOpen }: ShowSidebarProps) {
 function TitleBar() {
   return (
     <p
-      className=" text-2xl text-black  font-leckerli  font-bold
+      className=" text-2xl text-black  font-inter  font-bold
       hover:bg-white/10 hover:pl-2 hover:pr-2
       hover:shadow-[0px_0px_20px_rgba(255,255,255,0.5)] hover:rounded-2xl"
       style={{
@@ -75,7 +76,7 @@ function LogoutButton() {
         active:bg-linear-to-b active:from-red-600/60 active:to-white/30 active:via-blue-600/20
         active:shadow-[0px_0px_10px_rgba(255,0,0,0.5)]
         active:rounded-2xl
-        font-leckerli font-bold text-blue-800
+        font-inter font-bold text-blue-800
         "
       >
         Logout all users
@@ -91,10 +92,59 @@ function Storage({ text = "" }) {
   );
 }
 
+function UserOptionButton() {
+  return (
+    <button className=" active:bg-white/50 active:rounded-2xl hover:shadow-[0px_0px_20px_rgba(255,255,255,0.5)] hover:rounded-2xl h-full max-w-fit">
+      <BsThreeDotsVertical className="h-full w-full"></BsThreeDotsVertical>
+    </button>
+  );
+}
 function DashBoard({ cspan = "col-span-4" }) {
-  return <GlassCard className={cn("", cspan)}></GlassCard>;
+  const records = [];
+  for (let i = 0; i < 9; i++) {
+    records.push(
+      <Row className="">
+        {["ali", "ali@shawarma.com", "5GB", "3GB"].map((v) => (
+          <UserValue key={i} value={v} />
+        ))}
+        <UserOptionButton />
+      </Row>,
+    );
+  }
+
+  return (
+    <GlassCard className={cn("flex flex-col overflow-scroll gap-2  ", cspan)}>
+      <Row className="border-none backdrop-blur-none shadow-none ">
+        {["username", "email", "max space", "used space", ""].map((v) => (
+          <UserValue value={v} />
+        ))}
+      </Row>
+      {records}
+    </GlassCard>
+  );
 }
 
+function Row({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className: string;
+}) {
+  return (
+    <GlassCard
+      className={cn(
+        className,
+        "flex flex-row justify-between font-inter text-xl text-center text-blue-950/60",
+      )}
+    >
+      {children}
+    </GlassCard>
+  );
+}
+function UserValue({ value = "" }) {
+  return <span className="overflow-scroll max-w-sm">{value}</span>;
+}
 function SideBarButton({ sidebarOpen, setSidebarOpen }: ShowSidebarProps) {
   return (
     <button
