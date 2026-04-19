@@ -55,8 +55,42 @@ function TitleBar() {
   );
 }
 function SideBar() {
-  return <GlassCard className="col-span-1"></GlassCard>;
+  return (
+    <GlassCard className="flex flex-col col-span-1 overflow-auto gap-2 ">
+      <Storage text="max : 50GB" />
+      <Storage text="available: 20GB" />
+      <LogoutButton></LogoutButton>
+    </GlassCard>
+  );
 }
+function LogoutButton() {
+  return (
+    <GlassCard
+      className=" hover:bg-white/10 p-0 mt-auto"
+      gradient="bg-linear-to-b from-red-600/70 via-blue-600/20 to-white/50 hover:from-red-600/80 hover:to-white/70
+        transition-all duration-200"
+    >
+      <button
+        className="text-center w-full h-full p-5
+        active:bg-linear-to-b active:from-red-600/60 active:to-white/30 active:via-blue-600/20
+        active:shadow-[0px_0px_10px_rgba(255,0,0,0.5)]
+        active:rounded-2xl
+        font-leckerli font-bold text-blue-800
+        "
+      >
+        Logout all users
+      </button>
+    </GlassCard>
+  );
+}
+function Storage({ text = "" }) {
+  return (
+    <GlassCard className="text-nowrap overflow-x-scroll text-black font-bold italic text-shadow-2xs text-shadow-amber-50 text-center">
+      <span>{text}</span>
+    </GlassCard>
+  );
+}
+
 function DashBoard({ cspan = "col-span-4" }) {
   return <GlassCard className={cn("", cspan)}></GlassCard>;
 }
