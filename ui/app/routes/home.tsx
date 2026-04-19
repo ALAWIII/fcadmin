@@ -3,7 +3,7 @@ import { GoSidebarExpand, GoSidebarCollapse } from "react-icons/go";
 import { MdOutlinePersonAddAlt } from "react-icons/md";
 import { useState } from "react";
 import { GrRefresh } from "react-icons/gr";
-import { BsThreeDotsVertical } from "react-icons/bs";
+import { cn } from "~/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -11,8 +11,17 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "~/components/ui/dropdown-menu";
-import { cn } from "~/lib/utils";
-
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "~/components/ui/dialog";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
@@ -99,48 +108,155 @@ function Storage({ text = "" }) {
     </GlassCard>
   );
 }
+type FormFields = {
+  username: string;
+  email: string;
+  used_space: string;
+  max_space: string;
+};
+const user = {
+  id: 1,
+  username: "ali123",
+  email: "ali@example.com",
+  created_at: "2024-01-15",
+  used_space: "2.3 GB",
+  max_space: "10 GB",
+};
 
-function MyDropdown() {
+export function UserActionsDropdown() {
+  const [dialog, setDialog] = useState<null | string>(null); // "delete" | "details" | "update"
+  const [form, setForm] = useState<FormFields>({
+    username: user.username,
+    email: user.email,
+    used_space: user.used_space,
+    max_space: user.max_space,
+  });
+
+  const closeDialog = () => setDialog(null);
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger className="outline-none" asChild>
-        <button className=" active:bg-white/50 active:rounded-2xl hover:shadow-[0px_0px_20px_rgba(255,255,255,0.5)] hover:rounded-2xl h-full w-full">
-          <BsThreeDotsVertical className="h-full w-full"></BsThreeDotsVertical>
-        </button>
-      </DropdownMenuTrigger>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline">Actions</Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem onSelect={() => setDialog("details")}>
+            Details
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => setDialog("update")}>
+            Update
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onSelect={() => setDialog("delete")}
+            className="text-red-500"
+          >
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-      <DropdownMenuContent
-        className="bg-transparent backdrop-blur-xs hover:bg-white/50 min-w-fit"
-        align="end"
-      >
-        <DropdownMenuItem
-          onClick={() => console.log("Action 1")}
-          className="justify-center"
-        >
-          Details
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          className="justify-center"
-          onClick={() => console.log("Action 2")}
-        >
-          Update
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className=" focus:bg-red-500/50 justify-center"
-          onClick={() => console.log("Action 3")}
-        >
-          Delete
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      {/* DELETE DIALOG */}
+      <Dialog open={dialog === "delete"} onOpenChange={closeDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete User</DialogTitle>
+            <DialogDescription className="text-red-500">
+              ⚠️ This will permanently delete the user and all associated
+              files/folders. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={closeDialog}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                console.log("Deleting user...");
+                closeDialog();
+              }}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* DETAILS DIALOG */}
+      <Dialog open={dialog === "details"} onOpenChange={closeDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>User Details</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <span className="text-muted-foreground">ID</span>
+            <span>{user.id}</span>
+            <span className="text-muted-foreground">Username</span>
+            <span>{user.username}</span>
+            <span className="text-muted-foreground">Email</span>
+            <span>{user.email}</span>
+            <span className="text-muted-foreground">Created At</span>
+            <span>{user.created_at}</span>
+            <span className="text-muted-foreground">Used Space</span>
+            <span>{user.used_space}</span>
+            <span className="text-muted-foreground">Max Space</span>
+            <span>{user.max_space}</span>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={closeDialog}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* UPDATE DIALOG */}
+      <Dialog open={dialog === "update"} onOpenChange={closeDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update User</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4">
+            {[
+              { label: "Username", key: "username" as keyof FormFields },
+              { label: "Email", key: "email" as keyof FormFields },
+              { label: "Used Space", key: "used_space" as keyof FormFields },
+              { label: "Max Space", key: "max_space" as keyof FormFields },
+            ].map(({ label, key }) => (
+              <div key={key} className="grid gap-1">
+                <Label>{label}</Label>
+                <Input
+                  value={form[key]}
+                  onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                />
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={closeDialog}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                console.log("Saving:", form);
+                closeDialog();
+              }}
+            >
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
 function UserOptionButton() {
   return (
     <div className="h-8 justify-self-end-safe">
-      <MyDropdown />
+      <UserActionsDropdown />
     </div>
   );
 }
