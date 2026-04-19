@@ -4,6 +4,13 @@ import { MdOutlinePersonAddAlt } from "react-icons/md";
 import { useState } from "react";
 import { GrRefresh } from "react-icons/gr";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "~/components/ui/dropdown-menu";
 
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -92,11 +99,48 @@ function Storage({ text = "" }) {
   );
 }
 
+function MyDropdown() {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger className="outline-none" asChild>
+        <button className=" active:bg-white/50 active:rounded-2xl hover:shadow-[0px_0px_20px_rgba(255,255,255,0.5)] hover:rounded-2xl h-full w-full">
+          <BsThreeDotsVertical className="h-full w-full"></BsThreeDotsVertical>
+        </button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent
+        className="bg-transparent backdrop-blur-xs hover:bg-white/50 min-w-fit"
+        align="end"
+      >
+        <DropdownMenuItem
+          onClick={() => console.log("Action 1")}
+          className="justify-center"
+        >
+          Details
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="justify-center"
+          onClick={() => console.log("Action 2")}
+        >
+          Update
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className=" focus:bg-red-500/50 justify-center"
+          onClick={() => console.log("Action 3")}
+        >
+          Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function UserOptionButton() {
   return (
-    <button className=" active:bg-white/50 active:rounded-2xl hover:shadow-[0px_0px_20px_rgba(255,255,255,0.5)] hover:rounded-2xl h-full max-w-fit">
-      <BsThreeDotsVertical className="h-full w-full"></BsThreeDotsVertical>
-    </button>
+    <div className="h-8 justify-self-end-safe">
+      <MyDropdown />
+    </div>
   );
 }
 function DashBoard({ cspan = "col-span-4" }) {
@@ -135,7 +179,7 @@ function Row({
     <GlassCard
       className={cn(
         className,
-        "flex flex-row justify-between font-inter text-xl text-center text-blue-950/60",
+        "flex flex-row justify-between font-inter text-xl text-center text-blue-950/60 items-center p-2 h-fit ",
       )}
     >
       {children}
@@ -143,7 +187,7 @@ function Row({
   );
 }
 function UserValue({ value = "" }) {
-  return <span className="overflow-scroll max-w-sm">{value}</span>;
+  return <span className="overflow-scroll h-full text-center ">{value}</span>;
 }
 function SideBarButton({ sidebarOpen, setSidebarOpen }: ShowSidebarProps) {
   return (
