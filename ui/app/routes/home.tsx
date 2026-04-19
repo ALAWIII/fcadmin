@@ -1,4 +1,4 @@
-import { cn, GlassCard } from "~/lib";
+import { GlassCard } from "~/lib";
 import { GoSidebarExpand, GoSidebarCollapse } from "react-icons/go";
 import { MdOutlinePersonAddAlt } from "react-icons/md";
 import { useState } from "react";
@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "~/components/ui/dropdown-menu";
+import { cn } from "~/lib/utils";
 
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
