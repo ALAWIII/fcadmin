@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { fileRepo, folderRepo } from "../../db.js";
 import { logger } from "../../telemetry.js";
-import { isUuidV4 } from "../mod.js";
+import { isUuidV4 } from "../../index.js";
 
 export async function listChildren(req: Request, res: Response) {
   const folderId = req.params.id as string;
