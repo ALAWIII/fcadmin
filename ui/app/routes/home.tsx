@@ -31,11 +31,12 @@ import {
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { FileBrowser } from "~/fbrowser";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type User = {
-  id: number;
+  id: string;
   username: string;
   email: string;
   created_at: string;
@@ -55,7 +56,7 @@ enum DMode {
 // ─── Mock data (replace with API fetch later) ─────────────────────────────────
 
 const USERS: User[] = Array.from({ length: 9 }).map((_, i) => ({
-  id: i + 1,
+  id: `i + 1`,
   username: `user${i + 1}`,
   email: `user${i + 1}@example.com`,
   used_space: "2.3 GB",
@@ -163,7 +164,13 @@ function Storage({ text = "" }: { text?: string }) {
 
 // ─── UserActionsDropdown ──────────────────────────────────────────────────────
 
-export function UserActionsDropdown({ user }: { user: User }) {
+export function UserActionsDropdown({
+  user,
+  onBrowse,
+}: {
+  user: User;
+  onBrowse: () => void;
+}) {
   const [dialog, setDialog] = useState<DialogMode>(null);
   const [loading, setLoading] = useState(false);
 
@@ -216,6 +223,7 @@ export function UserActionsDropdown({ user }: { user: User }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={onBrowse}> Browse Files</DropdownMenuItem>
           <DropdownMenuItem onSelect={() => setDialog(DMode.details)}>
             Details
           </DropdownMenuItem>
@@ -328,17 +336,23 @@ export function UserActionsDropdown({ user }: { user: User }) {
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
-function UserOptionButton({ user }: { user: User }) {
+function UserOptionButton({
+  user,
+  onBrowse,
+}: {
+  user: User;
+  onBrowse: () => void;
+}) {
   return (
     <div className="h-8 justify-self-end">
-      <UserActionsDropdown user={user} />
+      <UserActionsDropdown user={user} onBrowse={onBrowse} />
     </div>
   );
 }
 
-function DashBoard({ cspan = "col-span-4" }: { cspan?: string }) {
+function UsersRecords({ onSelectUser }: { onSelectUser: (u: User) => void }) {
   return (
-    <GlassCard className={cn("flex flex-col gap-2 overflow-auto", cspan)}>
+    <>
       {/* Header row */}
       <Row className="border-none shadow-none backdrop-blur-none font-semibold">
         {["username", "email", "max space", "used space", ""].map((v) => (
@@ -353,13 +367,29 @@ function DashBoard({ cspan = "col-span-4" }: { cspan?: string }) {
           <UserValue value={user.email} />
           <UserValue value={user.max_space} />
           <UserValue value={user.used_space} />
-          <UserOptionButton user={user} />
+          <UserOptionButton user={user} onBrowse={() => onSelectUser(user)} />
         </Row>
       ))}
-    </GlassCard>
+    </>
   );
 }
 
+function DashBoard({ cspan = "col-span-4" }: { cspan?: string }) {
+  const [activeUser, setActiveUser] = useState<User | null>(null);
+
+  return (
+    <GlassCard className={cn("flex flex-col gap-2 overflow-auto", cspan)}>
+      {activeUser ? (
+        <FileBrowser
+          userId={activeUser.id}
+          onBack={() => setActiveUser(null)}
+        />
+      ) : (
+        <UsersRecords onSelectUser={setActiveUser} />
+      )}
+    </GlassCard>
+  );
+}
 function Row({
   children,
   className = "",
