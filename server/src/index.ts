@@ -1,9 +1,10 @@
 import app from "./app.js";
-import { auth } from "./middleware.js";
+import { auth, requireAuth } from "./middleware.js";
 import { listUsers } from "./api/users/list.js";
 import { addUser } from "./api/users/add.js";
 import fs from "fs";
 import { default as express } from "express";
+import cookieParser from "cookie-parser";
 import { validate, version } from "uuid";
 import path from "path";
 import { updateUser } from "./api/users/update.js";
@@ -19,23 +20,17 @@ export function isUuidV4(id: string): boolean {
 }
 
 const userRouter = express.Router();
-
-// apply middleware to all user routes
 userRouter.use(auth);
-
-// define routes relative to /api/user
 userRouter.get("/list", listUsers);
 userRouter.post("/add", addUser);
 userRouter.patch("/update/:id", updateUser);
 userRouter.delete("/remove/:id", removeUser);
 userRouter.post("/logout/", logoutUser);
 userRouter.get("/me", getMe);
-// mount router
 app.use("/api/user", userRouter);
 
 const objectRouter = express.Router();
 objectRouter.use(auth);
-
 objectRouter.get("/children/:id", listChildren);
 objectRouter.delete("/remove/:id", remove);
 app.use("/api/object", objectRouter);
@@ -52,29 +47,32 @@ console.log({
   indexFile,
   exists: fs.existsSync(indexFile),
 });
-// server/src/index.ts
-// Serve built UI from ui/build/
+
+app.use(cookieParser());
+
 app.use(
   express.static(clientDir, {
     etag: true,
     lastModified: true,
     setHeaders: (res, filePath) => {
       if (filePath.endsWith(".html")) {
-        console.log("sending html");
-        res.setHeader("Cache-Control", "no-cache"); // always revalidate HTML
+        res.setHeader("Cache-Control", "no-cache");
       } else {
-        res.setHeader("Cache-Control", "public, max-age=31536000, immutable"); // cache JS/CSS forever
+        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
       }
     },
   }),
 );
-app.use(express.static(clientDir));
 
-// Catch-all: serve index.html for all non-API routes (React Router handles the rest)
-app.get("/{*splat}", (req, res) => {
-  if (req.path.startsWith("/api"))
-    return res.status(404).json({ error: "Not found" });
-  res.sendFile(indexFile, {
-    headers: { "Cache-Control": "no-cache" },
+function serveProtected(path: string) {
+  app.get(path, requireAuth, (req, res) => {
+    res.sendFile(indexFile, { headers: { "Cache-Control": "no-cache" } });
   });
+}
+
+serveProtected("/dashboard");
+serveProtected("/dashboard/{*splat}");
+
+app.use((req, res) => {
+  res.status(404).json({ error: "Not found" });
 });
