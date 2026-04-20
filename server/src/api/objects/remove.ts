@@ -1,8 +1,8 @@
 import type { Request, Response } from "express";
-import { isUuidV4 } from "../mod.js";
 import { dbCon } from "../../db.js";
 import { DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import { rfs } from "../../lib.js";
+import { isUuidV4 } from "../../index.js";
 
 const DELETE_FILE = /*sql */ `
   WITH
