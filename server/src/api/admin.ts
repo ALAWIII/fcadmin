@@ -27,7 +27,13 @@ async function login(req: Request, res: Response): Promise<void> {
     });
 
     logger.info({ adminName: username }, "login success.");
-    res.json({ token });
+    res.cookie("token", token, {
+      httpOnly: true, // JS cannot read it (XSS protection)
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 1000, // 1 hour in ms
+    });
+    res.json({ success: true });
   } catch (err) {
     logger.error({ err }, "Login error"); // ← will reveal the real cause
     res.status(500).json({ error: "Internal server error" });
