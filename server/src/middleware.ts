@@ -31,7 +31,7 @@ declare global {
 }
 
 export function auth(req: Request, res: Response, next: NextFunction) {
-  const token = req.headers.authorization?.split(" ")[1]; // "Bearer <token>"
+  const token = req.cookies?.token ?? req.headers.authorization?.split(" ")[1]; // "Bearer <token>"
 
   if (!token) {
     res.status(401).json({ error: "No token provided" });
