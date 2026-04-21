@@ -1,9 +1,6 @@
-import app from "./app.js";
 import { auth, requireAuth } from "./middleware.js";
 import { listUsers } from "./api/users/list.js";
 import { addUser } from "./api/users/add.js";
-import fs from "fs";
-import { default as express } from "express";
 import cookieParser from "cookie-parser";
 import { validate, version } from "uuid";
 import path from "path";
@@ -14,11 +11,21 @@ import { listChildren } from "./api/objects/metadata.js";
 import { remove } from "./api/objects/remove.js";
 import { getMe } from "./api/users/me.js";
 import { fileURLToPath } from "url";
+import express, { type Application } from "express";
+import { login } from "./api/admin.js";
+import { logger } from "./telemetry.js";
+import { pinoHttp } from "pino-http";
+
+const app: Application = express();
+app.use(express.json());
+app.use(cookieParser());
+app.use(pinoHttp({ logger }));
+export default app;
 
 export function isUuidV4(id: string): boolean {
   return validate(id) && version(id) === 4;
 }
-
+app.post("/api/admin/login", login);
 const userRouter = express.Router();
 userRouter.use(auth);
 userRouter.get("/list", listUsers);
@@ -40,16 +47,7 @@ const __dirname = path.dirname(__filename);
 
 const clientDir = path.resolve(__dirname, "../../../../ui/build/client");
 const indexFile = path.join(clientDir, "index.html");
-
-console.log({
-  __dirname,
-  clientDir,
-  indexFile,
-  exists: fs.existsSync(indexFile),
-});
-
-app.use(cookieParser());
-
+logger.debug({ indexFile, clientDir }, "path to ui files.");
 app.use(
   express.static(clientDir, {
     etag: true,
@@ -64,6 +62,9 @@ app.use(
   }),
 );
 
+/**
+to protect against non-defined endpoints access.
+*/
 function serveProtected(path: string) {
   app.get(path, requireAuth, (req, res) => {
     res.sendFile(indexFile, { headers: { "Cache-Control": "no-cache" } });
