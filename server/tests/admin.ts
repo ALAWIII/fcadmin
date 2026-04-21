@@ -1,9 +1,11 @@
-import { insertValidAdmin, server } from "./utils.js";
+import { AdminAccount, insertValidAdmin, server } from "./utils.js";
 import { test, expect } from "vitest";
 
-async function login(): Promise<string> {
+async function login(): Promise<AdminAccount> {
   let newAdmin = await insertValidAdmin();
-  return newAdmin.jwt!;
+  expect(newAdmin.success).toBeTruthy;
+  expect(newAdmin.cookie).toBeDefined();
+  return newAdmin;
 }
 
 async function loginInvalidAdmin(): Promise<string> {
@@ -12,11 +14,7 @@ async function loginInvalidAdmin(): Promise<string> {
   return resp.body.error;
 }
 
-test("login returns token", async () => {
-  const token = await login();
-  expect(token.length).not.toEqual(0);
-  expect(token).toBeDefined();
-});
+test("login returns token", login);
 
 test("login with not found admin", async () => {
   let error = await loginInvalidAdmin();

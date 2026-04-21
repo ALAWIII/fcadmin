@@ -22,14 +22,14 @@ async function removeFile() {
   expect(before).true;
   let resp = await server
     .delete(`/api/object/remove/${folder1.id}?kind=folder&uid=${user.id}`)
-    .auth(admin.jwt!, { type: "bearer" })
+    .set("Cookie", admin.cookie!)
     .expect(200);
   expect(resp.body.message as string).toEqual("deletion success.");
   let after = await rfsObjectExists(rfsCon, user.id, file1.id);
   expect(after).false;
   let folder1Childs = await server
     .get(`/api/object/children/${folder1.id}`)
-    .auth(admin.jwt!, { type: "bearer" })
+    .set("Cookie", admin.cookie!)
     .expect(200);
 
   const { files, folders } = folder1Childs.body as {
@@ -49,7 +49,7 @@ async function removeFile() {
   const { files: rfiles, folders: rfolders } = (
     await server
       .get(`/api/object/children/${user.rootFolder!}`)
-      .auth(admin.jwt!, { type: "bearer" })
+      .set("Cookie", admin.cookie!)
       .expect(200)
   ).body as {
     files: File[];

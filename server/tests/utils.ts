@@ -1,4 +1,4 @@
-import { AdminRepo, app, fileRepo, folderRepo, rdsCon } from "../src/lib.js";
+import { AdminRepo, fileRepo, folderRepo, rdsCon } from "../src/lib.js";
 import { default as supertest } from "supertest";
 import { v4 as uuidv4 } from "uuid";
 import { default as argon2 } from "argon2";
@@ -9,6 +9,8 @@ import {
   type S3Client,
 } from "@aws-sdk/client-s3";
 import { expect } from "vitest";
+import { logger } from "../src/telemetry.js";
+import app from "../src/index.js";
 
 export const server = supertest(app);
 
@@ -17,6 +19,8 @@ export class AdminAccount {
   passwordHash: string;
   pswd: string;
   jwt?: string;
+  cookie?: string[] | undefined;
+  success = false;
 
   constructor(name: string, pswd: string, pswdhash: string) {
     this.passwordHash = pswdhash;
@@ -41,7 +45,13 @@ export async function insertValidAdmin() {
   let newAdmin = await insertAdmin();
   let body = { username: newAdmin.username, password: newAdmin.pswd };
   let resp = await server.post("/api/admin/login").send(body).expect(200);
-  newAdmin.jwt = resp.body.token;
+
+  const raw = resp.headers["set-cookie"];
+  logger.info({ rawCok: raw }, "extracting token cookie");
+
+  let cookieArr = Array.isArray(raw) ? raw : raw ? [raw] : undefined; // ← grab cookie instead of token
+  newAdmin.cookie = cookieArr?.map((c) => c.split(";")[0]);
+  newAdmin.success = resp.body.success ?? false;
   return newAdmin;
 }
 export interface NewUser {
@@ -54,7 +64,7 @@ export async function addUser(user: NewUser) {
   let resp = await server
     .post("/api/user/add")
     .send(user)
-    .auth(newAdmin.jwt!, { type: "bearer" })
+    .set("Cookie", newAdmin.cookie!)
     .expect(201);
   rdsCon.setex(`refresh:${user.username}`, 60 * 60, "");
   return resp.body as User;

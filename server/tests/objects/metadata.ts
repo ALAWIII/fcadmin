@@ -21,7 +21,7 @@ async function listobjects() {
 
   let resp = await server
     .get(`/api/object/children/${u.rootFolder!}`)
-    .auth(admin.jwt!, { type: "bearer" })
+    .set("Cookie", admin.cookie!)
     .expect(200);
 
   const { files, folders } = resp.body as { files: File[]; folders: Folder[] };
@@ -52,7 +52,7 @@ async function listObjectsInvalidFid() {
   let folderid = "invalid uuid";
   let resp = await server
     .get(`/api/object/children/${folderid}`)
-    .auth(admin.jwt!, { type: "bearer" })
+    .set("Cookie", admin.cookie!)
     .expect(400);
   expect(resp.body.error).toEqual("Invalid folder id.");
 }

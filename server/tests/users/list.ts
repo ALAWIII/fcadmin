@@ -19,7 +19,7 @@ async function listUsers() {
 
   let resp = await server
     .get("/api/user/list")
-    .auth(admin.jwt!, { type: "bearer" })
+    .set("Cookie", admin.cookie!)
     .expect(200);
   let usersL = resp.body as User[];
   expect(usersL).containSubset(uArr);

@@ -10,7 +10,7 @@ async function updateUser() {
   let newUInof = v4();
   let resp = await server
     .patch(`/api/user/update/${user.id}`)
-    .auth(admin.jwt!, { type: "bearer" })
+    .set("Cookie", admin.cookie!)
     .send({
       email: `${newUInof}@potato.com`,
       username: newUInof,
@@ -29,7 +29,7 @@ async function updateUserNullId() {
   let newUInof = v4();
   let resp = await server
     .patch(`/api/user/update/`) // no path like that only update/:id !!
-    .auth(admin.jwt!, { type: "bearer" })
+    .set("Cookie", admin.cookie!)
     .send({ email: newUInof, username: newUInof, storageQuotaBytes: 589 })
     .expect(404);
 }
@@ -39,7 +39,7 @@ async function updateUserWrongId() {
   let newUInof = v4();
   let resp = await server
     .patch(`/api/user/update/${newUInof}`)
-    .auth(admin.jwt!, { type: "bearer" })
+    .set("Cookie", admin.cookie!)
     .send({
       email: `${newUInof}@potato.com`,
       username: newUInof,
@@ -54,7 +54,7 @@ async function updateUserEmptyFields() {
   let user = await addUser({ username: uInfo, password: uInfo, email: uInfo });
   let resp = await server
     .patch(`/api/user/update/${user.id}`)
-    .auth(admin.jwt!, { type: "bearer" })
+    .set("Cookie", admin.cookie!)
     .expect(400);
 }
 
@@ -65,7 +65,7 @@ async function updateUserIncorrectFileds() {
   let newUInof = v4();
   let resp = await server
     .patch(`/api/user/update/${user.id}`)
-    .auth(admin.jwt!, { type: "bearer" })
+    .set("Cookie", admin.cookie!)
     .send({ gomail: newUInof })
     .expect(400);
 }

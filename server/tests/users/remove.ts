@@ -24,7 +24,7 @@ async function removeUser() {
   expect(fBefore).not.toBeNull();
   let resp = await server
     .delete(`/api/user/remove/${u.id}`)
-    .auth(admin.jwt!, { type: "bearer" })
+    .set("Cookie", admin.cookie!)
     .expect(200);
   let body = resp.body;
   expect(body.message as string).toEqual("User deleted");
@@ -41,7 +41,7 @@ async function removeNonExistedUser() {
   let uid = v4();
   let resp = await server
     .delete(`/api/user/remove/${uid}`)
-    .auth(admin.jwt!, { type: "bearer" })
+    .set("Cookie", admin.cookie!)
     .expect(404);
   let body = resp.body;
   expect(body.error as string).toEqual("User not found");

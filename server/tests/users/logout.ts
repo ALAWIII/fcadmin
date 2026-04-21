@@ -2,7 +2,6 @@ import { expect, test } from "vitest";
 import { addUser, insertValidAdmin, server } from "../utils.js";
 import { v4 } from "uuid";
 import rdsCon from "../../src/redis.js";
-import { logger } from "../../src/telemetry.js";
 
 async function logoutUsers() {
   let admin = await insertValidAdmin();
@@ -17,7 +16,7 @@ async function logoutUsers() {
   expect(before).toEqual(1);
   let resp = await server
     .post("/api/user/logout")
-    .auth(admin.jwt!, { type: "bearer" })
+    .set("Cookie", admin.cookie!)
     .expect(200);
   let after = await rdsCon.exists(`refresh:${user.username}`);
   expect(after).toEqual(0);
