@@ -1,6 +1,4 @@
 import pino from "pino";
-import { pinoHttp } from "pino-http";
-import app from "./app.js";
 import settings from "./config.js";
 
 export const logger = pino({
@@ -21,4 +19,4 @@ export const logger = pino({
   },
 });
 
-app.use(pinoHttp({ logger })); // logs every request automatically
+// logs every request automatically
