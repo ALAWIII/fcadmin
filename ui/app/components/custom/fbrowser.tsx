@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import { GlassCard } from "~/lib";
 import { GrRefresh } from "react-icons/gr";
 import { FaFolder, FaFile, FaArrowLeft } from "react-icons/fa";
 import {
@@ -28,7 +27,8 @@ import {
   AlertDialogAction,
 } from "~/components/ui/alert-dialog";
 import { Button } from "~/components/ui/button";
-import { cn } from "./lib/utils";
+import { cn } from "../../lib/utils";
+import { GlassCard } from "./glassContainer";
 // ─── API Types ────────────────────────────────────────────────────────────────
 interface FileBrowserProps {
   userId: string; // uuid to match ownerId

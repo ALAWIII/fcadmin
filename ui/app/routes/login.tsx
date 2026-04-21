@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { GlassCard } from "~/lib";
+import { GlassCard } from "~/components/custom/glassContainer";
 import { cn } from "~/lib/utils";
 export default function LoginPage() {
   return (

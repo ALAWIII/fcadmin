@@ -1,4 +1,3 @@
-import { GlassCard } from "~/lib";
 import { GoSidebarExpand, GoSidebarCollapse } from "react-icons/go";
 import { MdOutlinePersonAddAlt } from "react-icons/md";
 import { useState } from "react";
@@ -31,7 +30,8 @@ import {
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { FileBrowser } from "~/fbrowser";
+import { FileBrowser } from "~/components/custom/fbrowser";
+import { GlassCard } from "~/components/custom/glassContainer";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
