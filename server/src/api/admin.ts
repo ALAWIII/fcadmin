@@ -1,13 +1,13 @@
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
 import { AdminRepo } from "../lib.js";
-import app from "../app.js";
+
 import settings from "../config.js";
 import type { Request, Response } from "express";
 import { logger } from "../telemetry.js";
 import type { Admin } from "../models.js";
 
-async function login(req: Request, res: Response): Promise<void> {
+export async function login(req: Request, res: Response): Promise<void> {
   try {
     const { username, password } = req.body;
     logger.info({ adminName: username }, "start admin login.");
@@ -29,7 +29,7 @@ async function login(req: Request, res: Response): Promise<void> {
     logger.info({ adminName: username }, "login success.");
     res.cookie("token", token, {
       httpOnly: true, // JS cannot read it (XSS protection)
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "fc_production",
       sameSite: "lax",
       maxAge: 60 * 60 * 1000, // 1 hour in ms
     });
@@ -39,4 +39,3 @@ async function login(req: Request, res: Response): Promise<void> {
     res.status(500).json({ error: "Internal server error" });
   }
 }
-app.post("/api/admin/login", login);
