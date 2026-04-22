@@ -32,19 +32,15 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { FileBrowser } from "~/components/custom/fbrowser";
 import { GlassCard } from "~/components/custom/glassContainer";
+import { useUserStore, type User } from "~/lib/models";
+import { fetchUsers } from "~/lib/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type User = {
-  id: string;
-  username: string;
-  email: string;
-  created_at: string;
-  used_space: string;
-  max_space: string;
-};
-
-type FormFields = Pick<User, "username" | "email" | "used_space" | "max_space">;
+type FormFields = Pick<
+  User,
+  "username" | "email" | "storageQuotaBytes" | "storageUsedBytes"
+>;
 
 // Strict union so dialog state can only be one of these values
 type DialogMode = DMode | null;
@@ -53,16 +49,6 @@ enum DMode {
   details,
   update,
 }
-// ─── Mock data (replace with API fetch later) ─────────────────────────────────
-
-const USERS: User[] = Array.from({ length: 9 }).map((_, i) => ({
-  id: `i + 1`,
-  username: `user${i + 1}`,
-  email: `user${i + 1}@example.com`,
-  used_space: "2.3 GB",
-  max_space: "10 GB",
-  created_at: "2024-01-15",
-}));
 
 // ─── Home ─────────────────────────────────────────────────────────────────────
 
@@ -177,8 +163,8 @@ export function UserActionsDropdown({
   const [form, setForm] = useState<FormFields>({
     username: user.username,
     email: user.email,
-    used_space: user.used_space,
-    max_space: user.max_space,
+    storageUsedBytes: user.storageUsedBytes,
+    storageQuotaBytes: user.storageQuotaBytes,
   });
 
   const closeDialog = () => setDialog(null);
@@ -280,11 +266,11 @@ export function UserActionsDropdown({
             <span className="text-muted-foreground">Email</span>
             <span>{user.email}</span>
             <span className="text-muted-foreground">Created At</span>
-            <span>{user.created_at}</span>
+            <span>{user.createdAt}</span>
             <span className="text-muted-foreground">Used Space</span>
-            <span>{user.used_space}</span>
+            <span>{user.storageUsedBytes}</span>
             <span className="text-muted-foreground">Max Space</span>
-            <span>{user.max_space}</span>
+            <span>{user.storageQuotaBytes}</span>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={closeDialog}>
@@ -305,8 +291,8 @@ export function UserActionsDropdown({
               [
                 { label: "Username", key: "username" },
                 { label: "Email", key: "email" },
-                { label: "Used Space", key: "used_space" },
-                { label: "Max Space", key: "max_space" },
+                { label: "Used Space", key: "storageUsedBytes" },
+                { label: "Max Space", key: "storageQuotaBytes" },
               ] as const
             ).map(({ label, key }) => (
               <div key={key} className="grid gap-1">
@@ -351,25 +337,29 @@ function UserOptionButton({
 }
 
 function UsersRecords({ onSelectUser }: { onSelectUser: (u: User) => void }) {
+  const users = useUserStore((state) => state.users); // ← add this
+
   return (
     <>
-      {/* Header row */}
       <Row className="border-none shadow-none backdrop-blur-none font-semibold">
         {["username", "email", "max space", "used space", ""].map((v) => (
           <UserValue key={v} value={v} />
         ))}
       </Row>
 
-      {/* One row per user */}
-      {USERS.map((user) => (
-        <Row key={user.id} className="">
-          <UserValue value={user.username} />
-          <UserValue value={user.email} />
-          <UserValue value={user.max_space} />
-          <UserValue value={user.used_space} />
-          <UserOptionButton user={user} onBrowse={() => onSelectUser(user)} />
-        </Row>
-      ))}
+      {users.map(
+        (
+          user, // ← use this
+        ) => (
+          <Row key={user.id}>
+            <UserValue value={user.username} />
+            <UserValue value={user.email} />
+            <UserValue value={`${user.storageQuotaBytes}`} />
+            <UserValue value={`${user.storageUsedBytes}`} />
+            <UserOptionButton user={user} onBrowse={() => onSelectUser(user)} />
+          </Row>
+        ),
+      )}
     </>
   );
 }
@@ -432,7 +422,7 @@ function SideBarButton({ sidebarOpen, setSidebarOpen }: ShowSidebarProps) {
 
 function RefreshButton() {
   return (
-    <button className="h-14 w-14 p-4">
+    <button className="h-14 w-14 p-4" onClick={fetchUsers}>
       <GrRefresh className="h-full w-full rounded-full active:bg-amber-50/30 active:text-red-500 active:shadow-[0px_0px_20px_rgba(255,0,0,0.4)]" />
     </button>
   );
