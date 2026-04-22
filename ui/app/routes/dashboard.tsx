@@ -57,7 +57,12 @@ export default function Home() {
 
   return (
     <div
-      style={{ backgroundImage: "url('/clouds_sunset.jpg')" }}
+      style={{
+        backgroundImage: "url('/clouds_sunset.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
       className="grid h-dvh grid-cols-5 grid-rows-[auto_1fr] gap-4 bg-position-[100%_100%] bg-no-repeat p-4"
     >
       <TopBar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
