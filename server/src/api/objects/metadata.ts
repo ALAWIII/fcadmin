@@ -16,7 +16,10 @@ export async function listChildren(req: Request, res: Response) {
       folderRepo.find(q),
     ]);
 
-    res.json({ files, folders });
+    res.json({
+      files: files.map((f) => ({ ...f, type: "file" })),
+      folders: folders.map((f) => ({ ...f, type: "folder" })),
+    });
   } catch (err) {
     console.error(
       "[listChildren] Failed to fetch children for folder:",
