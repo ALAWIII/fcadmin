@@ -1,9 +1,11 @@
 // ui/app/lib/api.ts
 
 import {
+  folderChildrenResponseSchema,
   userAddSchema,
   userUpdateSchema,
   useUserStore,
+  type FSItem,
   type User,
   type UserUpdate,
 } from "./models";
@@ -92,4 +94,11 @@ export async function logoutUsers() {
   } catch (err) {
     console.error(`Failed to logout users: ${err}`);
   }
+}
+// 4. Parse the response
+export async function fetchFolderChildren(fid: string): Promise<FSItem[]> {
+  const raw = await api.get(`/object/children/${fid}`);
+  const { files, folders } = folderChildrenResponseSchema.parse(raw);
+  console.log("parsed args", files, folders);
+  return [...files, ...folders];
 }

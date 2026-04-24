@@ -53,3 +53,40 @@ export const useUserStore = create<UserStore>((set) => ({
   users: [],
   setUsers: (users) => set({ users }),
 }));
+
+const fileItemSchema = z.object({
+  id: z.uuid(),
+  ownerId: z.uuid(),
+  parentId: z.uuid(),
+  name: z.string(),
+  size: z.coerce.number(),
+  etag: z.string(),
+  mimeType: z.string(),
+  status: z.string(),
+  visibility: z.string(),
+  type: z.literal("file"),
+});
+
+const folderItemSchema = z.object({
+  id: z.uuid(),
+  ownerId: z.uuid(),
+  parentId: z.uuid().optional(),
+  name: z.string(),
+  status: z.string(),
+  visibility: z.string(),
+  copyingChildrenCount: z.number(),
+  type: z.literal("folder"),
+});
+const fsItemSchema = z.discriminatedUnion("type", [
+  fileItemSchema,
+  folderItemSchema,
+]);
+// 2. Discriminated union schema
+export const folderChildrenResponseSchema = z.object({
+  files: z.array(fileItemSchema),
+  folders: z.array(folderItemSchema),
+});
+
+export type FileItem = z.infer<typeof fileItemSchema>; // a single file
+export type FolderItem = z.infer<typeof folderItemSchema>; // a single folder
+export type FSItem = z.infer<typeof fsItemSchema>;
