@@ -29,121 +29,52 @@ import {
 import { Button } from "~/components/ui/button";
 import { cn } from "../../lib/utils";
 import { GlassCard } from "./glassContainer";
+import { fetchFolderChildren } from "~/lib/api";
+import type { FSItem } from "~/lib/models";
 // ─── API Types ────────────────────────────────────────────────────────────────
 interface FileBrowserProps {
-  userId: string; // uuid to match ownerId
+  rootId: string;
   onBack: () => void;
 }
+
 function formatSize(bytes?: number) {
   if (!bytes) return "—";
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
+
 type DialogMode = "details" | "delete" | null;
-export type FileItem = {
-  id: string; // uuid
-  ownerId: string;
-  parentId: string; // uuid of parent folder
-  name: string; // "report.pdf"
-  size: number;
-  etag: string;
-  mimeType: string;
-  status: string;
-  visibility: string;
-  type: "file";
-};
-
-export type FolderItem = {
-  id: string; // uuid
-  ownerId: string;
-  name: string;
-  status: string;
-  visibility: string;
-  copyingChildrenCount: number;
-  type: "folder";
-};
-
-export type FSItem = FileItem | FolderItem;
-
-// ─── In-memory HashMap: id → FSItem ──────────────────────────────────────────
-// Fast O(1) lookup by id
-export type FSMap = Map<string, FSItem>;
-
-// ─── Children index: parentId → FSItem[] ─────────────────────────────────────
-// Fast O(1) lookup of folder contents
-export type FSChildrenMap = Map<string, FSItem[]>;
-
-// ─── Path segment: name + id ──────────────────────────────────────────────────
-// Breadcrumb stores both so we navigate by id, display by name
+type FoldersChildren = Map<string, FSItem[]>;
 type PathSegment = { id: string; name: string };
 
-function buildFSMaps(items: FSItem[]): {
-  fsMap: FSMap;
-  childrenMap: FSChildrenMap;
-} {
-  const fsMap: FSMap = new Map();
-  const childrenMap: FSChildrenMap = new Map();
+export function FileBrowser({ rootId, onBack }: FileBrowserProps) {
+  const [children, setChildren] = useState<FoldersChildren>(new Map());
+  const [pathStack, setPathStack] = useState<PathSegment[]>([
+    { id: rootId, name: "" },
+  ]);
 
-  for (const item of items) {
-    // Index every item by its id
-    fsMap.set(item.id, item);
-
-    // Index children by parentId (files only — folders have no parentId in your model)
-    if (item.type === "file") {
-      const siblings = childrenMap.get(item.parentId) ?? [];
-      siblings.push(item);
-      childrenMap.set(item.parentId, siblings);
-    }
-  }
-
-  // Index root folders (no parentId) under a special "root" key
-  for (const item of items) {
-    if (item.type === "folder") {
-      const rootFolders = childrenMap.get("root") ?? [];
-      rootFolders.push(item);
-      childrenMap.set("root", rootFolders);
-    }
-  }
-
-  return { fsMap, childrenMap };
-}
-
-const ROOT: PathSegment = { id: "root", name: "/" };
-
-export function FileBrowser({ userId, onBack }: FileBrowserProps) {
-  const [fsMap, setFsMap] = useState<FSMap>(new Map());
-  const [childrenMap, setChildrenMap] = useState<FSChildrenMap>(new Map());
-
-  // Path stack: array of {id, name} segments
-  // e.g. [{id:"root", name:"/"}, {id:"uuid-1", name:"Documents"}, ...]
-  const [pathStack, setPathStack] = useState<PathSegment[]>([ROOT]);
-
-  // Current folder = last segment in stack
-  const currentFolder = pathStack[pathStack.length - 1];
-
-  // Items in current folder
-  const visibleItems = childrenMap.get(currentFolder.id) ?? [];
-
-  // Fetch files from API on mount
+  // Fetch root folder on mount
   useEffect(() => {
-    fetch(`/api/files/${userId}`)
-      .then((r) => r.json())
-      .then((data: FSItem[]) => {
-        const { fsMap, childrenMap } = buildFSMaps(data);
-        setFsMap(fsMap);
-        setChildrenMap(childrenMap);
-      });
-  }, [userId]);
+    fetchFolderChildren(rootId).then((fitems) => {
+      setChildren((p) => new Map(p).set(rootId, fitems));
+    });
+  }, [rootId]);
 
-  // Open folder → push to stack
+  // Open folder → push to stack + fetch children if not cached
   const openFolder = (item: FSItem) => {
-    if (item.type === "folder") {
-      setPathStack((prev) => [...prev, { id: item.id, name: item.name }]);
+    if (item.type !== "folder") return;
+
+    setPathStack((prev) => [...prev, { id: item.id, name: item.name }]);
+
+    if (!children.has(item.id)) {
+      fetchFolderChildren(item.id).then((fitems) => {
+        setChildren((p) => new Map(p).set(item.id, fitems));
+      });
     }
   };
 
-  // Go back → pop from stack, if at root → go back to user cards
+  // Go back → pop from stack, if at root → call onBack
   const goUp = () => {
     if (pathStack.length === 1) {
       onBack();
@@ -157,29 +88,34 @@ export function FileBrowser({ userId, onBack }: FileBrowserProps) {
     setPathStack((prev) => prev.slice(0, index + 1));
   };
 
-  // Delete item from both maps
+  // Refresh current folder
+  const handleRefresh = async () => {
+    const currentId = pathStack.at(-1)!.id;
+    const fitems = await fetchFolderChildren(currentId);
+    setChildren((p) => new Map(p).set(currentId, fitems));
+  };
+
+  // Delete item from children map
   const handleDelete = (item: FSItem) => {
-    // TODO: call DELETE /api/files/${userId}/${item.id}
-    setChildrenMap((prev) => {
-      const updated = new Map(prev);
-      const parentId = item.type === "file" ? item.parentId : "root";
-      const siblings = (updated.get(parentId) ?? []).filter(
-        (i) => i.id !== item.id,
+    setChildren((p) => {
+      const newMap = new Map(p);
+      const parentId =
+        item.type === "file" ? item.parentId : pathStack.at(-1)!.id;
+      const siblings = newMap.get(parentId) ?? [];
+      newMap.set(
+        parentId,
+        siblings.filter((i) => i.id !== item.id),
       );
-      updated.set(parentId, siblings);
-      return updated;
-    });
-    setFsMap((prev) => {
-      const updated = new Map(prev);
-      updated.delete(item.id);
-      return updated;
+      return newMap;
     });
   };
+
+  const currentItems = children.get(pathStack.at(-1)!.id) ?? [];
 
   return (
     <GlassCard className="h-full flex flex-col gap-2 overflow-hidden p-4">
       {/* ── Toolbar ── */}
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="flex items-center gap-2 shrink-0">
         <button
           onClick={goUp}
           className="h-9 w-9 flex items-center justify-center rounded-xl
@@ -188,7 +124,7 @@ export function FileBrowser({ userId, onBack }: FileBrowserProps) {
           <FaArrowLeft className="text-blue-800" />
         </button>
 
-        {/* Breadcrumb — built from pathStack */}
+        {/* Breadcrumb */}
         <div
           className="flex-1 flex items-center gap-1 bg-white/20 rounded-xl
           px-3 py-1.5 border border-white/30 overflow-x-auto"
@@ -201,7 +137,7 @@ export function FileBrowser({ userId, onBack }: FileBrowserProps) {
                 className={cn(
                   "text-sm font-inter font-medium transition-colors",
                   i === pathStack.length - 1
-                    ? "text-blue-900 font-bold" // current folder
+                    ? "text-blue-900 font-bold"
                     : "text-blue-500 hover:text-blue-800",
                 )}
               >
@@ -212,9 +148,7 @@ export function FileBrowser({ userId, onBack }: FileBrowserProps) {
         </div>
 
         <button
-          onClick={() => {
-            /* refresh */
-          }}
+          onClick={handleRefresh}
           className="h-9 w-9 flex items-center justify-center rounded-xl
             hover:bg-white/30 transition-all duration-200"
         >
@@ -224,19 +158,20 @@ export function FileBrowser({ userId, onBack }: FileBrowserProps) {
 
       {/* ── File list ── */}
       <div className="flex-1 overflow-auto flex flex-col gap-1 min-h-0">
-        {visibleItems.length === 0 && (
+        {currentItems.length === 0 ? (
           <div className="flex-1 flex items-center justify-center text-blue-600 italic">
             This folder is empty
           </div>
+        ) : (
+          currentItems.map((item) => (
+            <FSRow
+              key={item.id}
+              item={item}
+              onOpen={openFolder}
+              onDelete={handleDelete}
+            />
+          ))
         )}
-        {visibleItems.map((item) => (
-          <FSRow
-            key={item.id}
-            item={item}
-            onOpen={openFolder}
-            onDelete={handleDelete}
-          />
-        ))}
       </div>
     </GlassCard>
   );
@@ -264,9 +199,9 @@ function FSRow({
           onClick={() => onOpen(item)}
         >
           {item.type === "folder" ? (
-            <FaFolder className="text-amber-400 flex-shrink-0" />
+            <FaFolder className="text-amber-400 shrink-0" />
           ) : (
-            <FaFile className="text-blue-400 flex-shrink-0" />
+            <FaFile className="text-blue-400 shrink-0" />
           )}
           <span className="font-inter text-sm font-medium text-blue-900 truncate">
             {item.name}
