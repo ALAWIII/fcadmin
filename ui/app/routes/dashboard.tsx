@@ -396,7 +396,7 @@ function DashBoard({ cspan = "col-span-4" }: { cspan?: string }) {
     <GlassCard className={cn("flex flex-col gap-2 overflow-auto", cspan)}>
       {activeUser ? (
         <FileBrowser
-          userId={activeUser.id}
+          rootId={activeUser.rootFolder}
           onBack={() => setActiveUser(null)}
         />
       ) : (
