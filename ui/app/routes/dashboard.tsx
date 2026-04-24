@@ -190,6 +190,7 @@ export function UserActionsDropdown({
   // Call update API with the current form values
   const handleSave = async () => {
     setLoading(true);
+
     try {
       await updateUser(form, user.id);
       closeDialog();
@@ -308,17 +309,29 @@ export function UserActionsDropdown({
                 { label: "Used Space", key: "storageUsedBytes" },
                 { label: "Max Space", key: "storageQuotaBytes" },
               ] as const
-            ).map(({ label, key }) => (
-              <div key={key} className="grid gap-1">
-                <Label>{label}</Label>
-                <Input
-                  value={form[key]}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, [key]: e.target.value }))
-                  }
-                />
-              </div>
-            ))}
+            ).map(({ label, key }) => {
+              const isNumberField = [
+                "storageUsedBytes",
+                "storageQuotaBytes",
+              ].includes(key);
+              const dataType = isNumberField ? "number" : "string";
+              return (
+                <div key={key} className="grid gap-1">
+                  <Label>{label}</Label>
+                  <Input
+                    type={dataType}
+                    value={form[key] ?? ""}
+                    onChange={(e) => {
+                      const value = isNumberField
+                        ? Number(e.target.value)
+                        : e.target.value;
+
+                      setForm((prev) => ({ ...prev, [key]: value }));
+                    }}
+                  />
+                </div>
+              );
+            })}
           </div>
           <DialogFooter>
             <Button variant="outline" disabled={loading} onClick={closeDialog}>
