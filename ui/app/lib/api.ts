@@ -84,3 +84,12 @@ export async function removeUser(uid: string) {
     console.error(`failed to delete user ${err}`);
   }
 }
+
+export async function logoutUsers() {
+  try {
+    let resp = await api.post("/user/logout", {});
+    console.log(resp);
+  } catch (err) {
+    console.error(`Failed to logout users: ${err}`);
+  }
+}

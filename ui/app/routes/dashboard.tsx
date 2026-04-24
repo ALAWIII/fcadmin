@@ -35,7 +35,13 @@ import { Label } from "~/components/ui/label";
 import { FileBrowser } from "~/components/custom/fbrowser";
 import { GlassCard } from "~/components/custom/glassContainer";
 import { useUserStore, type User } from "~/lib/models";
-import { addUser, fetchUsers, removeUser, updateUser } from "~/lib/api";
+import {
+  addUser,
+  fetchUsers,
+  logoutUsers,
+  removeUser,
+  updateUser,
+} from "~/lib/api";
 import {
   Field,
   FieldDescription,
@@ -146,6 +152,7 @@ function LogoutButton() {
         active:rounded-2xl active:bg-linear-to-b active:from-red-600/60
         active:via-blue-600/20 active:to-white/30
         active:shadow-[0px_0px_10px_rgba(255,0,0,0.5)]"
+        onClick={logoutUsers}
       >
         Logout all users
       </button>
