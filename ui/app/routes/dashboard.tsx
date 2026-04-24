@@ -16,6 +16,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogClose,
+  DialogTrigger,
 } from "~/components/ui/dialog";
 import {
   AlertDialog,
@@ -32,8 +34,19 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { FileBrowser } from "~/components/custom/fbrowser";
 import { GlassCard } from "~/components/custom/glassContainer";
-import { useUserStore, type User } from "~/lib/models";
-import { fetchUsers, updateUser } from "~/lib/api";
+import {
+  userAddSchema,
+  useUserStore,
+  type User,
+  type UserAdd,
+} from "~/lib/models";
+import { addUser, fetchUsers, updateUser } from "~/lib/api";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from "~/components/ui/field";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -429,10 +442,83 @@ function RefreshButton() {
   );
 }
 
-function AddUserButton() {
+export function AddUserButton() {
+  const [dialog, setDialog] = useState(false);
+  const closeDialog = () => setDialog(false);
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // 1. Extract raw data from the form
+    const formData = new FormData(e.currentTarget);
+    const rawData = Object.fromEntries(formData.entries());
+
+    // 2. Validate with Zod
+    const result = userAddSchema.safeParse(rawData);
+
+    if (!result.success) {
+      console.error("Validation failed:", result.error);
+      // TODO: Show validation errors to the user (e.g., a toast notification)
+      return;
+    }
+
+    // 3. result.data is perfectly typed as UserAdd
+    try {
+      await addUser(result.data);
+      closeDialog();
+      // TODO: Optionally close the dialog or show a success message here
+    } catch (error) {
+      console.error("API error:", error);
+    }
+  };
+
   return (
-    <button className="h-14 w-14 p-4">
-      <MdOutlinePersonAddAlt className="h-full w-full rounded-es-sm active:bg-amber-50/30 active:text-green-500 active:shadow-[0px_0px_20px_rgba(0,255,255,0.5)]" />
-    </button>
+    <Dialog open={dialog} onOpenChange={setDialog}>
+      {/* 1. Let Shadcn handle the open/close state automatically */}
+      <DialogTrigger asChild>
+        <button
+          className="h-14 w-14 p-4 hover:bg-muted transition-colors rounded-md"
+          onClick={() => setDialog(true)}
+        >
+          <MdOutlinePersonAddAlt className="h-full w-full active:text-green-500 active:shadow-[0px_0px_20px_rgba(0,255,255,0.5)]" />
+        </button>
+      </DialogTrigger>
+
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add new user</DialogTitle>
+        </DialogHeader>
+
+        {/* 2. Wrap inputs in a form to handle submission */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="username">Username</FieldLabel>
+              <Input id="username" name="username" type="text" required />
+              <FieldDescription>Choose a username</FieldDescription>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="email">Email</FieldLabel>
+              <Input id="email" name="email" type="email" required />
+              <FieldDescription>Choose a unique unused email</FieldDescription>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="password">Password</FieldLabel>
+              <Input id="password" name="password" type="password" required />
+              <FieldDescription>Choose a strong password</FieldDescription>
+            </Field>
+          </FieldGroup>
+
+          <DialogFooter>
+            {/* 3. Use asChild so we don't render a button inside a button */}
+            <DialogClose asChild>
+              <Button type="button" variant="outline" onClick={closeDialog}>
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button type="submit">Save</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
