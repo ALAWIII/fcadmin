@@ -4,6 +4,7 @@ import {
   userUpdateSchema,
   useUserStore,
   type User,
+  type UserAdd,
   type UserUpdate,
 } from "./models";
 
@@ -54,4 +55,10 @@ export async function updateUser(user: UserUpdate, uid: string) {
   }
   await api.patch(`/user/update/${uid}`, user);
 }
-export async function addUser() {}
+export async function addUser(user: UserAdd) {
+  try {
+    await api.post("/user/add", user);
+  } catch (err) {
+    console.error(`failed to add new user ${err}`);
+  }
+}

@@ -9,11 +9,13 @@ export interface User {
   storageUsedBytes: number;
   rootFolder: string; // id to the rootFolder
 }
-export interface UserAdd {
-  email: string;
-  username: string;
-  password: string;
-}
+export const userAddSchema = z
+  .object({
+    username: z.string().min(3),
+    email: z.email(),
+    password: z.string().min(4),
+  })
+  .strict();
 // 1. Define the schema
 export const userUpdateSchema = z
   .object({
@@ -41,7 +43,7 @@ export const userUpdateSchema = z
 
 // 2. Extract the TypeScript type directly from the schema
 export type UserUpdate = z.infer<typeof userUpdateSchema>;
-
+export type UserAdd = z.infer<typeof userAddSchema>;
 type UserStore = {
   users: User[];
   setUsers: (users: User[]) => void;
