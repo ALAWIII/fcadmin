@@ -1,10 +1,10 @@
 // ui/app/lib/api.ts
 
 import {
+  userAddSchema,
   userUpdateSchema,
   useUserStore,
   type User,
-  type UserAdd,
   type UserUpdate,
 } from "./models";
 
@@ -56,9 +56,23 @@ export async function updateUser(user: UserUpdate, uid: string) {
   await api.patch(`/user/update/${uid}`, result.data);
 }
 
-export async function addUser(user: UserAdd) {
+export async function addUser(e: React.SubmitEvent<HTMLFormElement>) {
+  e.preventDefault();
+
+  // 1. Extract raw data from the form
+  const formData = new FormData(e.currentTarget);
+  const rawData = Object.fromEntries(formData.entries());
+
+  // 2. Validate with Zod
+  const result = userAddSchema.safeParse(rawData);
+
+  if (!result.success) {
+    console.error("Validation failed:", result.error);
+    // TODO: Show validation errors to the user (e.g., a toast notification)
+    return;
+  }
   try {
-    await api.post("/user/add", user);
+    await api.post("/user/add", result.data);
   } catch (err) {
     console.error(`failed to add new user ${err}`);
   }

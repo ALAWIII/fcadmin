@@ -34,12 +34,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { FileBrowser } from "~/components/custom/fbrowser";
 import { GlassCard } from "~/components/custom/glassContainer";
-import {
-  userAddSchema,
-  useUserStore,
-  type User,
-  type UserAdd,
-} from "~/lib/models";
+import { useUserStore, type User } from "~/lib/models";
 import { addUser, fetchUsers, updateUser } from "~/lib/api";
 import {
   Field,
@@ -459,29 +454,8 @@ export function AddUserButton() {
   const [dialog, setDialog] = useState(false);
   const closeDialog = () => setDialog(false);
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    // 1. Extract raw data from the form
-    const formData = new FormData(e.currentTarget);
-    const rawData = Object.fromEntries(formData.entries());
-
-    // 2. Validate with Zod
-    const result = userAddSchema.safeParse(rawData);
-
-    if (!result.success) {
-      console.error("Validation failed:", result.error);
-      // TODO: Show validation errors to the user (e.g., a toast notification)
-      return;
-    }
-
-    // 3. result.data is perfectly typed as UserAdd
-    try {
-      await addUser(result.data);
-      closeDialog();
-      // TODO: Optionally close the dialog or show a success message here
-    } catch (error) {
-      console.error("API error:", error);
-    }
+    await addUser(e);
+    closeDialog();
   };
 
   return (
