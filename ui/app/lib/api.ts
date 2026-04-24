@@ -1,6 +1,11 @@
 // ui/app/lib/api.ts
 
-import { useUserStore, type User } from "./models";
+import {
+  userUpdateSchema,
+  useUserStore,
+  type User,
+  type UserUpdate,
+} from "./models";
 
 const BASE = "/api";
 
@@ -40,3 +45,13 @@ export async function fetchUsers() {
     console.error("fetchUsers failed:", err);
   }
 }
+export async function updateUser(user: UserUpdate, uid: string) {
+  const result = userUpdateSchema.safeParse(user);
+
+  if (!result.success) {
+    console.error("Validation failed:", result.error);
+    return; // Stop execution if invalid
+  }
+  await api.patch(`/user/update/${uid}`, user);
+}
+export async function addUser() {}
