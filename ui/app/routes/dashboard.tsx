@@ -35,7 +35,7 @@ import { Label } from "~/components/ui/label";
 import { FileBrowser } from "~/components/custom/fbrowser";
 import { GlassCard } from "~/components/custom/glassContainer";
 import { useUserStore, type User } from "~/lib/models";
-import { addUser, fetchUsers, updateUser } from "~/lib/api";
+import { addUser, fetchUsers, removeUser, updateUser } from "~/lib/api";
 import {
   Field,
   FieldDescription,
@@ -199,14 +199,10 @@ export function UserActionsDropdown({
   // Call delete API then remove user from UI
   const handleDelete = async () => {
     setLoading(true);
-    try {
-      await fetch(`/api/users/${user.id}`, { method: "DELETE" });
-      closeDialog();
-    } catch (err) {
-      console.error("Delete failed:", err);
-    } finally {
-      setLoading(false);
-    }
+    await removeUser(user.id);
+    closeDialog();
+
+    setLoading(false);
   };
 
   return (

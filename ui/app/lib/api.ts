@@ -77,3 +77,10 @@ export async function addUser(e: React.SubmitEvent<HTMLFormElement>) {
     console.error(`failed to add new user ${err}`);
   }
 }
+export async function removeUser(uid: string) {
+  try {
+    await api.delete(`/user/remove/${uid}`);
+  } catch (err) {
+    console.error(`failed to delete user ${err}`);
+  }
+}
