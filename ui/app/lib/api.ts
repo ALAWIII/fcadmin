@@ -51,10 +51,11 @@ export async function updateUser(user: UserUpdate, uid: string) {
 
   if (!result.success) {
     console.error("Validation failed:", result.error);
-    return; // Stop execution if invalid
+    throw new Error(result.error.message);
   }
-  await api.patch(`/user/update/${uid}`, user);
+  await api.patch(`/user/update/${uid}`, result.data);
 }
+
 export async function addUser(user: UserAdd) {
   try {
     await api.post("/user/add", user);

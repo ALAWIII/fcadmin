@@ -21,8 +21,8 @@ export const userUpdateSchema = z
   .object({
     username: z.string().min(3).optional(),
     email: z.email().optional(),
-    storageQuotaBytes: z.number().min(0).optional(),
-    storageUsedBytes: z.number().min(0).optional(),
+    storageQuotaBytes: z.coerce.number().min(0).optional(),
+    storageUsedBytes: z.coerce.number().min(0).optional(),
   }) // Enforce at least one field is present
   .refine((data) => Object.keys(data).length > 0, {
     message: "Update payload cannot be empty",
