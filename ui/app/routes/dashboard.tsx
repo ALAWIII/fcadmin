@@ -33,7 +33,7 @@ import { Label } from "~/components/ui/label";
 import { FileBrowser } from "~/components/custom/fbrowser";
 import { GlassCard } from "~/components/custom/glassContainer";
 import { useUserStore, type User } from "~/lib/models";
-import { fetchUsers } from "~/lib/api";
+import { fetchUsers, updateUser } from "~/lib/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -178,11 +178,7 @@ export function UserActionsDropdown({
   const handleSave = async () => {
     setLoading(true);
     try {
-      await fetch(`/api/users/${user.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
+      await updateUser(form, user.id);
       closeDialog();
     } catch (err) {
       console.error("Update failed:", err);
